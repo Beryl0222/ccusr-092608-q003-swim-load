@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "游泳多项负荷让渡簿领域事件",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "aggregate_type",
+    "aggregate_id",
+    "occurred_at",
+    "version",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "ENTRY_REGISTERED",
+        "LOAD_RECORDED",
+        "MEDICAL_HOLD_SET",
+        "ROSTER_SUBSTITUTED",
+        "CHECKIN_LOCKED"
+      ]
+    },
+    "aggregate_type": {
+      "type": "string",
+      "enum": [
+        "event_entry",
+        "load_window",
+        "relay_roster",
+        "checkin_revision"
+      ]
+    },
+    "aggregate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "payload_required_by_event": {
+    "LOAD_RECORDED": [
+      "source_ref",
+      "load_value"
+    ],
+    "ROSTER_SUBSTITUTED": [
+      "replaced_athlete",
+      "replacement"
+    ],
+    "CHECKIN_LOCKED": [
+      "roster_version",
+      "locked_at"
+    ]
+  },
+  "additionalProperties": false
+}
