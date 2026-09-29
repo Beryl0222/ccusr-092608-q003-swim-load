@@ -23,7 +23,14 @@
         "LOAD_RECORDED",
         "MEDICAL_HOLD_SET",
         "ROSTER_SUBSTITUTED",
-        "CHECKIN_LOCKED"
+        "CHECKIN_LOCKED",
+        "ATHLETE_REGISTERED",
+        "RELAY_CANDIDATES_LISTED",
+        "PLAN_PROPOSED",
+        "PLAN_CONFIRMED",
+        "PLAN_DISCARDED",
+        "RESULT_CERTIFIED",
+        "RECORD_DECLARED"
       ]
     },
     "aggregate_type": {
@@ -32,7 +39,10 @@
         "event_entry",
         "load_window",
         "relay_roster",
-        "checkin_revision"
+        "checkin_revision",
+        "athlete",
+        "load_plan",
+        "result_sheet"
       ]
     },
     "aggregate_id": {
@@ -47,21 +57,124 @@
       "type": "integer",
       "minimum": 1
     },
+    "actor": {
+      "type": "object",
+      "required": [
+        "id",
+        "role"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "head_coach",
+            "relay_coach",
+            "medical",
+            "staff"
+          ]
+        }
+      }
+    },
     "payload": {
       "type": "object"
     }
   },
   "payload_required_by_event": {
+    "ATHLETE_REGISTERED": [
+      "name"
+    ],
+    "ENTRY_REGISTERED": [
+      "athlete_id",
+      "event_code",
+      "round",
+      "scheduled_start",
+      "scheduled_end"
+    ],
     "LOAD_RECORDED": [
       "source_ref",
-      "load_value"
+      "load_value",
+      "athlete_id",
+      "load_type",
+      "window_start",
+      "window_end"
+    ],
+    "MEDICAL_HOLD_SET": [
+      "athlete_id",
+      "held",
+      "reason"
+    ],
+    "RELAY_CANDIDATES_LISTED": [
+      "relay_id",
+      "candidate_ids",
+      "event_code",
+      "round",
+      "scheduled_start",
+      "scheduled_end"
     ],
     "ROSTER_SUBSTITUTED": [
       "replaced_athlete",
-      "replacement"
+      "replacement",
+      "relay_id",
+      "slot"
+    ],
+    "PLAN_PROPOSED": [
+      "plan_id",
+      "basis",
+      "target",
+      "changes",
+      "windows",
+      "evaluation"
+    ],
+    "PLAN_CONFIRMED": [
+      "plan_id",
+      "occupied_windows",
+      "released_arrangements"
+    ],
+    "PLAN_DISCARDED": [
+      "plan_id",
+      "reason"
     ],
     "CHECKIN_LOCKED": [
       "roster_version",
+      "locked_at",
+      "event_code",
+      "round",
+      "entries",
+      "snapshot_hash"
+    ],
+    "RESULT_CERTIFIED": [
+      "checkin_revision_id",
+      "roster_version",
+      "results",
+      "snapshot_hash"
+    ],
+    "RECORD_DECLARED": [
+      "event_code",
+      "round",
+      "record_type",
+      "result_sheet_id",
+      "checkin_revision_id",
+      "evidence_hash"
+    ]
+  },
+  "payload_datetime_fields_by_event": {
+    "ENTRY_REGISTERED": [
+      "scheduled_start",
+      "scheduled_end"
+    ],
+    "RELAY_CANDIDATES_LISTED": [
+      "scheduled_start",
+      "scheduled_end"
+    ],
+    "LOAD_RECORDED": [
+      "window_start",
+      "window_end"
+    ],
+    "CHECKIN_LOCKED": [
       "locked_at"
     ]
   },

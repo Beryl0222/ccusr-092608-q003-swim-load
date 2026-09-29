@@ -45,6 +45,10 @@ def validate_event(payload: Any, schema: Mapping[str, Any]) -> list[ContractIssu
         value = payload.get(field)
         if isinstance(value, str) and allowed and value not in allowed:
             issues.append(ContractIssue(field, "unsupported_value", "字段值未在契约中登记"))
+    actor = payload.get("actor")
+    if "actor" in payload:
+        actor_issues = _validate_actor(actor, properties.get("actor", {}))
+        issues.extend(ContractIssue(f"actor.{f}", code, msg) for f, code, msg in actor_issues)
     event_type = payload.get("event_type")
     body = payload.get("payload")
     if "payload" in payload and not isinstance(body, Mapping):
@@ -53,4 +57,27 @@ def validate_event(payload: Any, schema: Mapping[str, Any]) -> list[ContractIssu
         for field in schema.get("payload_required_by_event", {}).get(event_type, []):
             if field not in body:
                 issues.append(ContractIssue(f"payload.{field}", "required", "事件载荷缺少必填字段"))
+        for field in schema.get("payload_datetime_fields_by_event", {}).get(event_type, []):
+            value = body.get(field)
+            if isinstance(value, str) and not _timezone_is_explicit(value):
+                issues.append(
+                    ContractIssue(f"payload.{field}", "timezone_required", "载荷时间必须包含时区")
+                )
     return sorted(issues, key=lambda issue: (issue.field, issue.code))
+
+
+def _validate_actor(actor: Any, schema: Mapping[str, Any]) -> list[tuple[str, str, str]]:
+    if not isinstance(actor, Mapping):
+        return [("$", "object_required", "操作者必须是 JSON 对象")]
+    issues: list[tuple[str, str, str]] = []
+    for field in schema.get("required", []):
+        if field not in actor:
+            issues.append((field, "required", "操作者缺少必填字段"))
+    actor_id = actor.get("id")
+    if "id" in actor and (not isinstance(actor_id, str) or not actor_id.strip()):
+        issues.append(("id", "non_empty_string", "操作者标识必须是非空字符串"))
+    allowed_roles = schema.get("properties", {}).get("role", {}).get("enum", [])
+    role = actor.get("role")
+    if isinstance(role, str) and allowed_roles and role not in allowed_roles:
+        issues.append(("role", "unsupported_value", "操作者角色未在契约中登记"))
+    return issues
