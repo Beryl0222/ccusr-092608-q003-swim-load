@@ -2,8 +2,13 @@
   "event_id": "092601-003-sample-001",
   "event_type": "ENTRY_REGISTERED",
   "aggregate_type": "event_entry",
-  "aggregate_id": "swim_load-001",
-  "occurred_at": "2026-09-25T10:00:00+08:00",
+  "aggregate_id": "entry-day2-200fr-heat-A01",
+  "occurred_at": "2026-09-26T10:00:00+08:00",
   "version": 1,
-  "payload": {}
+  "payload": {
+    "athlete_id": "A01",
+    "event_code": "200FR",
+    "round": "heat",
+    "session_id": "day2"
+  }
 }

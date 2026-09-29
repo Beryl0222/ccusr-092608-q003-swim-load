@@ -6,6 +6,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Mapping
 
+_TYPE_CHECKERS = {
+    "array": lambda value: isinstance(value, list),
+    "object": lambda value: isinstance(value, Mapping),
+    "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
+    "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
+    "string": lambda value: isinstance(value, str),
+}
+
+_TYPE_MESSAGES = {
+    "array": "字段必须是数组",
+    "object": "字段必须是 JSON 对象",
+    "number": "字段必须是数值",
+    "integer": "字段必须是整数",
+    "string": "字段必须是字符串",
+}
+
 
 @dataclass(frozen=True)
 class ContractIssue:
@@ -53,4 +69,14 @@ def validate_event(payload: Any, schema: Mapping[str, Any]) -> list[ContractIssu
         for field in schema.get("payload_required_by_event", {}).get(event_type, []):
             if field not in body:
                 issues.append(ContractIssue(f"payload.{field}", "required", "事件载荷缺少必填字段"))
+        for field in schema.get("payload_forbidden_by_event", {}).get(event_type, []):
+            if field in body:
+                issues.append(ContractIssue(f"payload.{field}", "forbidden", "该事件禁止携带此字段"))
+        for field, allowed in schema.get("payload_enums_by_event", {}).get(event_type, {}).items():
+            value = body.get(field)
+            if isinstance(value, str) and value not in allowed:
+                issues.append(ContractIssue(f"payload.{field}", "unsupported_value", "字段值未在契约中登记"))
+        for field, expected_type in schema.get("payload_types_by_event", {}).get(event_type, {}).items():
+            if field in body and not _TYPE_CHECKERS[expected_type](body[field]):
+                issues.append(ContractIssue(f"payload.{field}", "type_mismatch", _TYPE_MESSAGES[expected_type]))
     return sorted(issues, key=lambda issue: (issue.field, issue.code))

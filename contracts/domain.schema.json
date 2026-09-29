@@ -20,10 +20,18 @@
       "type": "string",
       "enum": [
         "ENTRY_REGISTERED",
+        "SPLIT_RECORDED",
         "LOAD_RECORDED",
         "MEDICAL_HOLD_SET",
+        "MEDICAL_HOLD_LIFTED",
+        "COACH_DECISION_RECORDED",
         "ROSTER_SUBSTITUTED",
-        "CHECKIN_LOCKED"
+        "CHECKIN_LOCKED",
+        "SNAPSHOT_TAKEN",
+        "PLAN_DRAFTED",
+        "PLAN_CONFIRMED",
+        "PLAN_DISCARDED",
+        "RECORD_CLAIM_FILED"
       ]
     },
     "aggregate_type": {
@@ -32,7 +40,10 @@
         "event_entry",
         "load_window",
         "relay_roster",
-        "checkin_revision"
+        "checkin_revision",
+        "plan_snapshot",
+        "lineup_plan",
+        "record_claim"
       ]
     },
     "aggregate_id": {
@@ -52,18 +63,162 @@
     }
   },
   "payload_required_by_event": {
+    "ENTRY_REGISTERED": [
+      "athlete_id",
+      "event_code",
+      "round",
+      "session_id"
+    ],
+    "SPLIT_RECORDED": [
+      "athlete_id",
+      "event_code",
+      "round",
+      "session_id",
+      "source_ref",
+      "splits"
+    ],
     "LOAD_RECORDED": [
       "source_ref",
-      "load_value"
+      "load_value",
+      "athlete_id",
+      "window_kind",
+      "session_id"
+    ],
+    "MEDICAL_HOLD_SET": [
+      "athlete_id",
+      "authority",
+      "reason"
+    ],
+    "MEDICAL_HOLD_LIFTED": [
+      "athlete_id",
+      "authority",
+      "reason"
+    ],
+    "COACH_DECISION_RECORDED": [
+      "athlete_id",
+      "authority",
+      "decision",
+      "reason"
     ],
     "ROSTER_SUBSTITUTED": [
       "replaced_athlete",
-      "replacement"
+      "replacement",
+      "relay_event_code",
+      "round",
+      "authority"
     ],
     "CHECKIN_LOCKED": [
       "roster_version",
-      "locked_at"
+      "locked_at",
+      "session_id"
+    ],
+    "SNAPSHOT_TAKEN": [
+      "session_id",
+      "entry_refs",
+      "roster_refs",
+      "result_refs"
+    ],
+    "PLAN_DRAFTED": [
+      "snapshot_ref",
+      "session_id",
+      "score_prep_time",
+      "score_recovery_load",
+      "score_substitute_availability",
+      "score_record_material"
+    ],
+    "PLAN_CONFIRMED": [
+      "snapshot_ref",
+      "reserved_windows",
+      "released_arrangements"
+    ],
+    "PLAN_DISCARDED": [
+      "reason"
+    ],
+    "RECORD_CLAIM_FILED": [
+      "event_code",
+      "session_id",
+      "roster_version",
+      "locked_revision",
+      "result_ref"
     ]
+  },
+  "payload_forbidden_by_event": {
+    "MEDICAL_HOLD_SET": [
+      "replacement",
+      "replaced_athlete"
+    ],
+    "MEDICAL_HOLD_LIFTED": [
+      "replacement",
+      "replaced_athlete"
+    ],
+    "ROSTER_SUBSTITUTED": [
+      "medical_conclusion"
+    ],
+    "RECORD_CLAIM_FILED": [
+      "post_session_result_ref"
+    ]
+  },
+  "payload_enums_by_event": {
+    "LOAD_RECORDED": {
+      "window_kind": [
+        "warmup",
+        "recovery"
+      ]
+    },
+    "MEDICAL_HOLD_SET": {
+      "authority": [
+        "medical"
+      ]
+    },
+    "MEDICAL_HOLD_LIFTED": {
+      "authority": [
+        "medical"
+      ]
+    },
+    "COACH_DECISION_RECORDED": {
+      "authority": [
+        "coach"
+      ],
+      "decision": [
+        "START",
+        "SCRATCH",
+        "CONCEDE"
+      ]
+    },
+    "ROSTER_SUBSTITUTED": {
+      "authority": [
+        "relay_coach"
+      ]
+    }
+  },
+  "payload_types_by_event": {
+    "SPLIT_RECORDED": {
+      "splits": "array"
+    },
+    "LOAD_RECORDED": {
+      "load_value": "number"
+    },
+    "CHECKIN_LOCKED": {
+      "roster_version": "integer"
+    },
+    "SNAPSHOT_TAKEN": {
+      "entry_refs": "array",
+      "roster_refs": "array",
+      "result_refs": "array"
+    },
+    "PLAN_DRAFTED": {
+      "score_prep_time": "number",
+      "score_recovery_load": "number",
+      "score_substitute_availability": "number",
+      "score_record_material": "number"
+    },
+    "PLAN_CONFIRMED": {
+      "reserved_windows": "array",
+      "released_arrangements": "array"
+    },
+    "RECORD_CLAIM_FILED": {
+      "roster_version": "integer"
+    }
   },
   "additionalProperties": false
 }
